@@ -1,0 +1,16 @@
+Package: oshaData
+Type: Package
+Title: Retrieve OSHA General Duty Standard Search Results
+Version: 0.1.0
+Author: Kent Orr <orr.kent@pawpawanalytics.com>
+Maintainer: Kent Orr <orr.kent@pawpawanalytics.com>
+Description: oshaData is a package for accessing the Integrated Management Information System (IMIS) provided by OSHA.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    httr,
+    rvest,
+    stringr
+RoxygenNote: 7.1.1
