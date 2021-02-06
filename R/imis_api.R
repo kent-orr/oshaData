@@ -1,4 +1,3 @@
-library(dplyr)
 
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("NOTE TO USERS
@@ -47,6 +46,9 @@ osha_search = function(std_query,
                        end_year = stringr::str_pad(lubridate::year(Sys.Date()), 2, "left", "0"),
                        category = "",
                        InspNr = "") {
+
+  library(dplyr)
+
   response <-
     httr::GET(
       "https://www.osha.gov/pls/imis/GeneralSearch.search",
