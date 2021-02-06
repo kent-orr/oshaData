@@ -1,4 +1,4 @@
-Package: oshaData
+Package: oshaR
 Type: Package
 Title: Retrieve OSHA General Duty Standard Search Results
 Version: 0.1.0
