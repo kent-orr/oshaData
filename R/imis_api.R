@@ -16,12 +16,8 @@ The data should be verified by reference to the case file and confirmed by the a
 #' @param p_start pagination start row
 #' @param p_finish pagination finish row
 #' @param p_show how many results to show per page
-#' @param start_month start of query month in "mm" format
-#' @param start_day start of query day in "dd" format
-#' @param start_year start of query year in "yyyy" format
-#' @param end_month end of query month in "mm" format
-#' @param end_day end of query day in "dd" format
-#' @param end_year end of query year in "yyyy" format
+#' @param start_date "yyyymmdd" start date to limit results
+#' @param end_date "yyyymmdd" end date to limit results
 #' @param category unsure
 #' @param InspNr unsure
 #'
@@ -35,17 +31,19 @@ osha_search = function(std_query,
                        p_start = 0,
                        p_finish = 0,
                        p_show = 50,
-                       start_month = stringr::str_pad(lubridate::month(Sys.Date() -
-                                                                90), 2, "left", "0"),
-                       start_day = stringr::str_pad(lubridate::mday(Sys.Date() -
-                                                             90), 2, "left", "0"),
-                       start_year = stringr::str_pad(lubridate::year(Sys.Date() -
-                                                              90), 2, "left", "0"),
-                       end_month = stringr::str_pad(lubridate::month(Sys.Date()), 2, "left", "0"),
-                       end_day = stringr::str_pad(lubridate::mday(Sys.Date()), 2, "left", "0"),
-                       end_year = stringr::str_pad(lubridate::year(Sys.Date()), 2, "left", "0"),
+                       start_date = Sys.Date()-365,
+                       end_date = Sys.Date(),
                        category = "",
                        InspNr = "") {
+
+
+  start_month = stringr::str_pad(lubridate::month(start_date), 2, "left", "0")
+  start_day = stringr::str_pad(lubridate::mday(start_date), 2, "left", "0")
+  start_year = stringr::str_pad(lubridate::year(start_date), 2, "left", "0")
+
+  end_month = stringr::str_pad(lubridate::month(end_date), 2, "left", "0")
+  end_day = stringr::str_pad(lubridate::mday(end_date), 2, "left", "0")
+  end_year = stringr::str_pad(lubridate::year(end_date), 2, "left", "0")
 
   library(dplyr)
 
@@ -85,15 +83,15 @@ osha_search = function(std_query,
            x)
   }
 
-  inspection_list <- lapply(response$inspection, function(x) rvest::html_table(xml2::read_html(httr::content(httr::GET(i_url(x)), "text")),  fill = T))
+  response$url <- i_url(response$inspection)
 
-  inspection_df <- lapply(inspection_list, function(x) as.data.frame.list(x[[3]][1][c(4,5,7,8),]))
+  inspection_list <- lapply(response$url, curl_fetch_memory)
+  site_text <- lapply(inspection_list, function(x) rawToChar(x$content))
+  site_tables <- lapply(site_text, function(x) rvest::html_table(xml2::read_html(htmltools::HTML(trimws(x))), fill = TRUE)[[3]][1][c(4,7,8),])
 
-  inspection_df <- lapply(inspection_df, function(x) setNames(x, c("establishment_name", "establishment_address", "naics", "mailing_address")))
+  inspection_df <- lapply(site_tables, function(x) setNames(as.data.frame.list(x), c("establishment_name",  "naics", "mailing_address")))
 
   inspection_df <- do.call(bind_rows, inspection_df)
-
-  inspection_df$mailing_address <- gsub("Mailing: ", "", inspection_df$mailing_address)
 
   return_df <- cbind(response, inspection_df[which(names(inspection_df) != 'establishment_name')])
 
@@ -119,9 +117,9 @@ osha_search = function(std_query,
 
   return_df$description <- as.character(c_list)
 
-  return_df$street <- stringr::str_extract(return_df$establishment_address, ".+?(?=,)")
-  return_df$state <- trimws(stringr::str_extract(return_df$establishment_address, "(?<=,) \\D{2}"))
-  return_df$zip <- trimws(stringr::str_extract(return_df$establishment_address, "(?<=, \\D{2}).+"))
+  return_df$street <- stringr::str_extract(return_df$mailing_address, "^(.+)(?=,)")
+  return_df$state <- trimws(stringr::str_extract(return_df$mailing_address, "(?<=,) \\D{2}"))
+  return_df$zip <- trimws(stringr::str_extract(return_df$mailing_address, "(?<=, \\D{2}).+"))
 
   return_df
 }
