@@ -78,14 +78,16 @@ osha_search = function(std_query,
 
   names(response) <- stringr::str_to_lower(gsub(" ", "_", names(response)))
 
+  # ------------------------------------------------------- investigations -----
+
   i_url <- function(x) {
     paste0("https://www.osha.gov/pls/imis/establishment.inspection_detail?id=",
            x)
   }
 
-  response$url <- i_url(response$inspection)
+  response$i_url <- i_url(response$inspection)
 
-  inspection_list <- lapply(response$url, curl_fetch_memory)
+  inspection_list <- lapply(response$i_url, curl::curl_fetch_memory)
   site_text <- lapply(inspection_list, function(x) rawToChar(x$content))
   site_tables <- lapply(site_text, function(x) rvest::html_table(xml2::read_html(htmltools::HTML(trimws(x))), fill = TRUE)[[3]][1][c(4,7,8),])
 
@@ -95,6 +97,7 @@ osha_search = function(std_query,
 
   return_df <- cbind(response, inspection_df[which(names(inspection_df) != 'establishment_name')])
 
+  # ------------------------------------------------------------ citations -----
 
   c_url <- function(x) {
     paste0('https://www.osha.gov/pls/imis/generalsearch.citation_detail?id=', response$inspection[x], "&cit_id=",
@@ -102,24 +105,15 @@ osha_search = function(std_query,
            )
   }
 
-  c_url_list <- lapply(seq_along(response[,1]), c_url)
+  response$c_url <- paste0('https://www.osha.gov/pls/imis/generalsearch.citation_detail?id=', response$inspection, "&cit_id=", response$citation)
 
-  c_list <-
-  lapply(c_url_list, function(x) rvest::html_text(
-    rvest::html_node(
-      xml2::read_html(
-        httr::content(
-          httr::GET(x), "text")
-        ), xpath =  '//*[@id="maincontain"]/div/div[3]/text()'
-      )
-    )
-  )
+  citation_list <- lapply(response$c_url, curl::curl_fetch_memory)
 
-  return_df$description <- as.character(c_list)
+  site_text <- lapply(citation_list, function(x) rawToChar(x$content))
 
-  return_df$street <- stringr::str_extract(return_df$mailing_address, "^(.+)(?=,)")
-  return_df$state <- trimws(stringr::str_extract(return_df$mailing_address, "(?<=,) \\D{2}"))
-  return_df$zip <- trimws(stringr::str_extract(return_df$mailing_address, "(?<=, \\D{2}).+"))
+  site_tables <- lapply(site_text, function(x) rvest::html_text(rvest::html_node(xml2::read_html(htmltools::HTML(trimws(x))), xpath =  '//*[@id="maincontain"]/div/div[3]/text()')))
+
+  return_df$description <- as.character(site_tables)
 
   return_df
 }
