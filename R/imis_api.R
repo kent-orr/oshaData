@@ -17,8 +17,8 @@ The data should be verified by reference to the case file and confirmed by the a
 #' @param p_start pagination start row
 #' @param p_finish pagination finish row
 #' @param p_show how many results to show per page
-#' @param start_date "yyyymmdd" start date to limit results
-#' @param end_date "yyyymmdd" end date to limit results. Defaults to last 365 days
+#' @param start_date "yyyy-mm-dd" start date to limit results
+#' @param end_date "yyyy-mm-dd" end date to limit results. Defaults to last 365 days
 #' @param category unsure
 #' @param InspNr unsure
 #'

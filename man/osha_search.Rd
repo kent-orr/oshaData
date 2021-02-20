@@ -33,9 +33,9 @@ osha_search(
 
 \item{p_show}{how many results to show per page}
 
-\item{start_date}{"yyyymmdd" start date to limit results}
+\item{start_date}{"yyyy-mm-dd" start date to limit results}
 
-\item{end_date}{"yyyymmdd" end date to limit results. Defaults to last 365 days}
+\item{end_date}{"yyyy-mm-dd" end date to limit results. Defaults to last 365 days}
 
 \item{category}{unsure}
 
