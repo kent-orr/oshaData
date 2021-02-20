@@ -186,5 +186,12 @@ osha_search = function(std_query,
 
   return_df$description <- as.character(citation_list)
 
-  return_df
+  return_df %>%
+    mutate(naics = gsub("NAICS: ", "", naics),
+           naics_code = str_extract(naics, "^\\d+"),
+           naics_description = str_extract(naics, "(?<=/)\\D+")) %>%
+    mutate(mailing_address = gsub("Mailing: ", "", mailing_address)) %>%
+    separate(mailing_address, into = c("addr_street", "addr_city", "addr_state"), sep = ", ") %>%
+    separate(addr_state, into = c('addr_state', 'addr_zip'), sep = " ") %>%
+    separate(description, into = c('violation_code', 'violation_desc'), sep = ": |:")
 }
