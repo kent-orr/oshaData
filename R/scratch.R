@@ -1,24 +1,40 @@
-# library(curl)
+# pool <- curl::new_pool()
+#
+# inspection_list <- list()
+#
+# success <- function(res){
+#   # cat("Request done! Status:", res$status, "\n")
+#   inspection_list <<- c(inspection_list, list(
+#     rvest::html_table(xml2::read_html(htmltools::HTML(trimws(
+#       rawToChar(res$content)
+#     ))), fill = TRUE)[[3]][1][c(4, 7, 8), ]
+#       ))
+# }
+#
+# failure <- function(msg){
+#   cat("Oh noes! Request failed!", msg, "\n")
+# }
 #
 #
-# anus <- lapply(response$url, curl_fetch_memory)
-# site_text <- lapply(anus, function(x) rawToChar(x$content))
-# site_tables <- lapply(site_text, function(x) rvest::html_table(xml2::read_html(htmltools::HTML(trimws(x))), fill = TRUE)[[3]][1][c(4,7,8),])
+# lapply(seq_along(response$i_url), function(x)
+#   curl::curl_fetch_multi(response$i_url[x],
+#                          done = success,
+#                          fail = failure,
+#                          pool = pool,
+#                          ))
 #
-# inspection_df <- lapply(site_tables, function(x) setNames(as.data.frame.list(x), c("establishment_name",  "naics", "mailing_address")))
+# curl::multi_run(pool = pool)
 #
-# inspection_df <- do.call(bind_rows, inspection_df)
+# #================================================================================
 #
+# inspection_list <- lapply(response$i_url, curl::curl_fetch_memory)
 #
-# play_site <- site_text[[1]]
+# site_text <-
+#   lapply(inspection_list, function(x)
+#     rawToChar(x$content))
 #
-# library(xml2)
-# library(rvest)
-#
-#
-# xml2::read_html(htmltools::htmlEscape(play_site))
-#
-# anus <- rvest::html_table(xml2::read_html(htmltools::HTML(trimws(play_site))), fill = TRUE)
-#
-# as.data.frame.list(anus[[3]][1][c(4,7,8),])
-
+# site_tables <-
+#   lapply(site_text, function(x)
+#     rvest::html_table(xml2::read_html(htmltools::HTML(trimws(
+#       x
+#     ))), fill = TRUE)[[3]][1][c(4, 7, 8), ])
