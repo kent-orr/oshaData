@@ -154,21 +154,37 @@ osha_search = function(std_query,
       response$citation
     )
 
-  citation_list <- lapply(response$c_url, curl::curl_fetch_memory)
+  pool <- curl::new_pool()
 
-  site_text <-
-    lapply(citation_list, function(x)
-      rawToChar(x$content))
+  citation_list <- list()
 
-  site_tables <-
-    lapply(site_text, function(x)
+  success <- function(res){
+    # cat("Request done! Status:", res$status, "\n")
+    citation_list <<- c(citation_list, list(
       rvest::html_text(
         rvest::html_node(xml2::read_html(htmltools::HTML(trimws(
-          x
-        ))), xpath =  '//*[@id="maincontain"]/div/div[3]/text()')
-      ))
+          rawToChar(res$content))
+        )), xpath =  '//*[@id="maincontain"]/div/div[3]/text()')
+      )
+    )
+    )
+  }
 
-  return_df$description <- as.character(site_tables)
+  failure <- function(msg){
+    cat("Oh noes! Request failed!", msg, "\n")
+  }
+
+
+  lapply(seq_along(response$c_url), function(x)
+    curl::curl_fetch_multi(response$c_url[x],
+                           done = success,
+                           fail = failure,
+                           pool = pool,
+    ))
+
+  curl::multi_run(pool = pool)
+
+  return_df$description <- as.character(citation_list)
 
   return_df
 }
