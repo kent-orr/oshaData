@@ -3,9 +3,7 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage(
     "NOTE TO USERS
-
-The source of the information in the IMIS is the local federal or state office in the geographical area where the activity occurred. Information is entered as events occur in the course of agency activities. Until cases are closed, IMIS entries concerning specific OSHA inspections are subject to continuing correction and updating, particularly with regard to citation items, which are subject to modification by amended citations, settlement agreements, or as a result of contest proceedings. THE USER SHOULD ALSO BE AWARE THAT DIFFERENT COMPANIES MAY HAVE SIMILAR NAMES AND CLOSE ATTENTION TO THE ADDRESS MAY BE NECESSARY TO AVOID MISINTERPRETATION.
-
+The source of the information in the IMIS is the local federal or state office in the geographical area where the activity occurred. Information is entered as events occur in the course of agency activities.
 The data should be verified by reference to the case file and confirmed by the appropriate federal or state office."
   )
 }
@@ -20,7 +18,7 @@ The data should be verified by reference to the case file and confirmed by the a
 #' @param p_finish pagination finish row
 #' @param p_show how many results to show per page
 #' @param start_date "yyyymmdd" start date to limit results
-#' @param end_date "yyyymmdd" end date to limit results
+#' @param end_date "yyyymmdd" end date to limit results. Defaults to last 365 days
 #' @param category unsure
 #' @param InspNr unsure
 #'
@@ -38,6 +36,7 @@ osha_search = function(std_query,
                        end_date = Sys.Date(),
                        category = "",
                        InspNr = "") {
+
   start_month = stringr::str_pad(lubridate::month(start_date), 2, "left", "0")
   start_day = stringr::str_pad(lubridate::mday(start_date), 2, "left", "0")
   start_year = stringr::str_pad(lubridate::year(start_date), 2, "left", "0")
@@ -45,8 +44,6 @@ osha_search = function(std_query,
   end_month = stringr::str_pad(lubridate::month(end_date), 2, "left", "0")
   end_day = stringr::str_pad(lubridate::mday(end_date), 2, "left", "0")
   end_year = stringr::str_pad(lubridate::year(end_date), 2, "left", "0")
-
-  library(dplyr)
 
   response <-
     httr::GET(
@@ -72,10 +69,19 @@ osha_search = function(std_query,
       )
     )
 
-  response <-
+
+
+  response_func <- function() {
     xml2::read_html(httr::content(response, "text")) %>%
     rvest::html_node(xpath = '//*[@id="maincontain"]/div/div[3]/table') %>%
     rvest::html_table()
+  }
+
+  tryCatch(response_func(),
+           error = function(c) "No Results Found. Try another query or adjust date params?",
+           warning = function(c) "Warning: Do us all a favor open a Github issue about this warning.",
+           message = function(c) "message"
+  )
 
   names(response) <-
     stringr::str_to_lower(gsub(" ", "_", names(response)))
@@ -90,9 +96,11 @@ osha_search = function(std_query,
   response$i_url <- i_url(response$inspection)
 
   inspection_list <- lapply(response$i_url, curl::curl_fetch_memory)
+
   site_text <-
     lapply(inspection_list, function(x)
       rawToChar(x$content))
+
   site_tables <-
     lapply(site_text, function(x)
       rvest::html_table(xml2::read_html(htmltools::HTML(trimws(

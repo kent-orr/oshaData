@@ -12,12 +12,8 @@ osha_search(
   p_start = 0,
   p_finish = 0,
   p_show = 50,
-  start_month = stringr::str_pad(lubridate::month(Sys.Date() - 90), 2, "left", "0"),
-  start_day = stringr::str_pad(lubridate::mday(Sys.Date() - 90), 2, "left", "0"),
-  start_year = stringr::str_pad(lubridate::year(Sys.Date() - 90), 2, "left", "0"),
-  end_month = stringr::str_pad(lubridate::month(Sys.Date()), 2, "left", "0"),
-  end_day = stringr::str_pad(lubridate::mday(Sys.Date()), 2, "left", "0"),
-  end_year = stringr::str_pad(lubridate::year(Sys.Date()), 2, "left", "0"),
+  start_date = Sys.Date() - 365,
+  end_date = Sys.Date(),
   category = "",
   InspNr = ""
 )
@@ -37,17 +33,9 @@ osha_search(
 
 \item{p_show}{how many results to show per page}
 
-\item{start_month}{start of query month in "mm" format}
+\item{start_date}{"yyyymmdd" start date to limit results}
 
-\item{start_day}{start of query day in "dd" format}
-
-\item{start_year}{start of query year in "yyyy" format}
-
-\item{end_month}{end of query month in "mm" format}
-
-\item{end_day}{end of query day in "dd" format}
-
-\item{end_year}{end of query year in "yyyy" format}
+\item{end_date}{"yyyymmdd" end date to limit results. Defaults to last 365 days}
 
 \item{category}{unsure}
 

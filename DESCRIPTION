@@ -12,5 +12,6 @@ Imports:
     dplyr,
     httr,
     rvest,
-    stringr
+    stringr,
+    magrittr
 RoxygenNote: 7.1.1
