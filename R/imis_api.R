@@ -77,6 +77,7 @@ osha_search = function(std_query,
     rvest::html_table()
   }
 
+  response <-
   tryCatch(response_func(),
            error = function(c) "No Results Found. Try another query or adjust date params?",
            warning = function(c) "Warning: Do us all a favor open a Github issue about this warning.",
