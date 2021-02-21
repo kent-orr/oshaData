@@ -13,5 +13,7 @@ Imports:
     httr,
     rvest,
     stringr,
-    magrittr
+    magrittr,
+    lubridate,
+    curl
 RoxygenNote: 7.1.1
