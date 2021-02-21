@@ -130,7 +130,7 @@ osha_search = function(std_query,
         c("establishment_name",  "naics", "mailing_address")
       ))
 
-  inspection_df <- do.call(bind_rows, inspection_df)
+  inspection_df <- do.call(dplyr::bind_rows, inspection_df)
 
   return_df <-
     cbind(response, inspection_df[which(names(inspection_df) != 'establishment_name')])
